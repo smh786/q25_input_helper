@@ -32,8 +32,7 @@ jobs:
       - name: Check version bump
         if: github.event_name == 'pull_request'
         run: |
-          if git cat-file -e origin/main:app/build.gradle 2>/dev/null; then
-            git show origin/main:app/build.gradle > /tmp/base-build.gradle
+          if git fetch origin main --depth=1 && git show FETCH_HEAD:app/build.gradle > /tmp/base-build.gradle 2>/dev/null; then
             python3 scripts/check_version_bump.py /tmp/base-build.gradle app/build.gradle
           else
             echo "No base app/build.gradle found; skipping version check for repository bootstrap."
