@@ -1,0 +1,101 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  android:
+    name: Android checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Check version bump
+        if: github.event_name == 'pull_request'
+        run: |
+          if git cat-file -e origin/main:app/build.gradle 2>/dev/null; then
+            git show origin/main:app/build.gradle > /tmp/base-build.gradle
+            python3 scripts/check_version_bump.py /tmp/base-build.gradle app/build.gradle
+          else
+            echo "No base app/build.gradle found; skipping version check for repository bootstrap."
+          fi
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run unit tests
+        run: ./gradlew testStandardDebugUnitTest testSystemDebugUnitTest
+
+      - name: Run lint
+        run: ./gradlew lintStandardDebug lintSystemDebug
+
+      - name: Build debug APKs
+        run: ./gradlew assembleStandardDebug assembleSystemDebug
+
+      - name: Upload debug APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: q25-input-helper-debug
+          path: |
+            app/build/outputs/apk/standard/debug/app-standard-debug.apk
+            app/build/outputs/apk/system/debug/app-system-debug.apk
+          retention-days: 7
+
+  e2e:
+    name: Emulator smoke test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run emulator smoke test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          script: ./gradlew connectedStandardDebugAndroidTest

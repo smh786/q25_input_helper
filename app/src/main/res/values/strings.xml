@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Q25 Input Helper</string>
+    <string name="accessibility_service_label">Q25 Input Helper</string>
+    <string name="accessibility_service_description">Targeted Q25 keyboard input fixes for known lockscreen and system app input screens.</string>
+</resources>

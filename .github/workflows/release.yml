@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows:
+      - Test
+    branches:
+      - main
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  release:
+    name: Build and publish APK
+    runs-on: ubuntu-latest
+    if: github.repository == 'smh786/q25_input_helper' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Decode release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "Missing KEYSTORE_BASE64 secret." >&2
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > release.jks
+
+      - name: Build signed release APKs
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          Q25_INPUT_HELPER_KEYSTORE: ${{ github.workspace }}/release.jks
+          Q25_INPUT_HELPER_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          Q25_INPUT_HELPER_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          Q25_INPUT_HELPER_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleStandardRelease assembleSystemRelease
+
+      - name: Prepare artifact names
+        run: |
+          VERSION_NAME="$(python3 scripts/read_version.py app/build.gradle)"
+          mkdir -p release
+          cp app/build/outputs/apk/standard/release/app-standard-release.apk "release/q25-input-helper-standard-${VERSION_NAME}.apk"
+          cp app/build/outputs/apk/system/release/app-system-release.apk "release/q25-input-helper-system-${VERSION_NAME}.apk"
+          echo "TAG_NAME=v${VERSION_NAME}" >> "$GITHUB_ENV"
+          echo "STANDARD_APK_PATH=release/q25-input-helper-standard-${VERSION_NAME}.apk" >> "$GITHUB_ENV"
+          echo "SYSTEM_APK_PATH=release/q25-input-helper-system-${VERSION_NAME}.apk" >> "$GITHUB_ENV"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: ${{ env.TAG_NAME }}
+          files: |
+            ${{ env.STANDARD_APK_PATH }}
+            ${{ env.SYSTEM_APK_PATH }}
+          body: |
+            Automated release from `${{ github.sha }}`.
+
+            Assets:
+
+            - `q25-input-helper-standard`: sideload build with launcher UI.
+            - `q25-input-helper-system`: no-launcher build for ROM `/system/priv-app` inclusion.
+
+            Enable the `Q25 Input Helper` accessibility service before testing targeted input fixes.
