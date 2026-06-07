@@ -46,7 +46,7 @@ Planned fixes can include targeted adapters for broken system-app input surfaces
 
 ## E2E Smoke Test
 
-CI runs an emulator smoke test that installs the app and verifies the target package. Device-specific Q25 behavior still needs manual testing on hardware.
+The `E2E` workflow can be run manually from GitHub Actions. It starts an emulator, installs the app, and verifies the target package. Device-specific Q25 behavior still needs manual testing on hardware.
 
 For hardware testing:
 

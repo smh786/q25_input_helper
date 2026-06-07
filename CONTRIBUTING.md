@@ -47,6 +47,7 @@ PRs run:
 - unit tests
 - Android lint
 - debug APK build
-- emulator smoke test
+
+The manual `E2E` workflow runs an emulator smoke test. Run it for changes that affect installation, app startup, accessibility service registration, or Android framework integration.
 
 Release builds run after `main` passes tests.

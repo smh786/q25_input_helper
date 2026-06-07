@@ -67,34 +67,3 @@ jobs:
             app/build/outputs/apk/standard/debug/app-standard-debug.apk
             app/build/outputs/apk/system/debug/app-system-debug.apk
           retention-days: 7
-
-  e2e:
-    name: Emulator smoke test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Run emulator smoke test
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          script: ./gradlew connectedStandardDebugAndroidTest
