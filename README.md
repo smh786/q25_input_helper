@@ -23,10 +23,15 @@ Q25 Input Helper must not:
 
 ## Current Fixes
 
-- SystemUI PIN screen scaffold.
+- SystemUI PIN screen.
   - Detects `com.android.systemui:id/keyguard_pin_view`.
+  - Requires the active root package to be `com.android.systemui`.
+  - Requires the device keyguard to be locked.
   - Maps Q25 PIN keys to SystemUI PIN keypad buttons.
   - Requires the target button to belong under the PIN view before clicking.
+
+This fix is inspired by and credits mionica's closed Q25 KeyMapper Boot Fix PR:
+https://github.com/smh786/q25-keymapper-boot-fix/pull/7
 
 Planned fixes can include targeted adapters for broken system-app input surfaces, such as dialer/phone screens where number entry does not work correctly from the Q25 keyboard.
 
@@ -51,13 +56,13 @@ The `E2E` workflow can be run manually from GitHub Actions. It starts an emulato
 For hardware testing:
 
 ```bash
-./scripts/install-system-test.sh --apk ./q25-input-helper-system-0.1.0.apk
+./scripts/install-system-test.sh --apk ./q25-input-helper-system-0.1.1.apk
 ```
 
 or on Windows:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-system-test.ps1 -ApkPath .\q25-input-helper-system-0.1.0.apk
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-system-test.ps1 -ApkPath .\q25-input-helper-system-0.1.1.apk
 ```
 
 ## Contributing

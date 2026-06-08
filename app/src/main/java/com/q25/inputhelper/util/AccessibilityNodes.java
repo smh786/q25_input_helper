@@ -32,18 +32,19 @@ public final class AccessibilityNodes {
         return result;
     }
 
+    public static boolean hasPackage(AccessibilityNodeInfo node, String packageName) {
+        CharSequence nodePackage = node.getPackageName();
+        return nodePackage != null && packageName.contentEquals(nodePackage);
+    }
+
     public static boolean isDescendantOf(AccessibilityNodeInfo node, AccessibilityNodeInfo ancestor) {
         AccessibilityNodeInfo parent = node.getParent();
         while (parent != null) {
-            try {
-                if (parent.equals(ancestor)) return true;
-                AccessibilityNodeInfo nextParent = parent.getParent();
-                parent.recycle();
-                parent = nextParent;
-            } catch (RuntimeException e) {
-                parent.recycle();
-                throw e;
-            }
+            boolean matches = parent.equals(ancestor);
+            AccessibilityNodeInfo nextParent = matches ? null : parent.getParent();
+            parent.recycle();
+            if (matches) return true;
+            parent = nextParent;
         }
 
         return false;
