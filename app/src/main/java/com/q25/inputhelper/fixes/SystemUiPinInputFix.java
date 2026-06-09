@@ -17,29 +17,48 @@ public final class SystemUiPinInputFix implements InputFix {
     @Override
     public boolean onKeyEvent(AccessibilityService service, KeyEvent event) {
         if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
-        if (!isDeviceLocked(service)) return false;
+        if (!isDeviceLocked(service)) {
+            return false;
+        }
 
         Q25KeyTranslator.Input input = Q25KeyTranslator.toPinInput(event.getKeyCode());
-        if (input == null) return false;
+        if (input == null) {
+            return false;
+        }
 
         AccessibilityNodeInfo root = service.getRootInActiveWindow();
-        if (root == null) return false;
+        if (root == null) {
+            return false;
+        }
 
         try {
-            if (!AccessibilityNodes.hasPackage(root, SYSTEM_UI_PACKAGE)) return false;
-
             AccessibilityNodeInfo pinView = AccessibilityNodes.findSingleNode(root, PIN_VIEW_ID);
-            if (pinView == null) return false;
+            if (pinView == null) {
+                return false;
+            }
 
             try {
+                if (!AccessibilityNodes.hasPackage(pinView, SYSTEM_UI_PACKAGE)) {
+                    return false;
+                }
+
                 String buttonId = Q25KeyTranslator.systemUiPinButtonId(input);
-                AccessibilityNodeInfo button = AccessibilityNodes.findSingleNode(root, buttonId);
-                if (button == null) return false;
+                AccessibilityNodeInfo button = AccessibilityNodes.findSingleNodeInTree(
+                        pinView,
+                        buttonId,
+                        Q25KeyTranslator.systemUiPinButtonFallbackLabels(input)
+                );
+                if (button == null) {
+                    return false;
+                }
 
                 try {
-                    if (!AccessibilityNodes.isDescendantOf(button, pinView)) return false;
-                    if (!button.isClickable()) return false;
-                    if (event.getRepeatCount() > 0) return true;
+                    if (!button.isClickable()) {
+                        return false;
+                    }
+                    if (event.getRepeatCount() > 0) {
+                        return true;
+                    }
                     return button.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 } finally {
                     button.recycle();

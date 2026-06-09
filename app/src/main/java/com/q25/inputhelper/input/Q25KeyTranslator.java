@@ -2,6 +2,9 @@ package com.q25.inputhelper.input;
 
 import android.view.KeyEvent;
 
+import java.util.Collections;
+import java.util.List;
+
 public final class Q25KeyTranslator {
     public enum Input {
         DIGIT_0,
@@ -92,6 +95,35 @@ public final class Q25KeyTranslator {
                 return "com.android.systemui:id/delete_button";
             default:
                 return null;
+        }
+    }
+
+    public static List<String> systemUiPinButtonFallbackLabels(Input input) {
+        if (input == null) return Collections.emptyList();
+
+        switch (input) {
+            case DIGIT_0:
+                return Collections.singletonList("0");
+            case DIGIT_1:
+                return Collections.singletonList("1");
+            case DIGIT_2:
+                return Collections.singletonList("2");
+            case DIGIT_3:
+                return Collections.singletonList("3");
+            case DIGIT_4:
+                return Collections.singletonList("4");
+            case DIGIT_5:
+                return Collections.singletonList("5");
+            case DIGIT_6:
+                return Collections.singletonList("6");
+            case DIGIT_7:
+                return Collections.singletonList("7");
+            case DIGIT_8:
+                return Collections.singletonList("8");
+            case DIGIT_9:
+                return Collections.singletonList("9");
+            default:
+                return Collections.emptyList();
         }
     }
 }
