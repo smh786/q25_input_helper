@@ -1,6 +1,7 @@
 package com.q25.inputhelper.input;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 
 import android.view.KeyEvent;
@@ -37,5 +38,15 @@ public final class Q25KeyTranslatorTest {
                 Q25KeyTranslator.systemUiPinButtonId(Q25KeyTranslator.Input.ENTER));
         assertEquals("com.android.systemui:id/delete_button",
                 Q25KeyTranslator.systemUiPinButtonId(Q25KeyTranslator.Input.DELETE));
+    }
+
+    @Test
+    public void pinInputsExposeAccessibilityLabelsForFallbackMatching() {
+        assertEquals("1", Q25KeyTranslator.systemUiPinButtonFallbackLabels(
+                Q25KeyTranslator.Input.DIGIT_1).get(0));
+        assertTrue(Q25KeyTranslator.systemUiPinButtonFallbackLabels(
+                Q25KeyTranslator.Input.ENTER).isEmpty());
+        assertTrue(Q25KeyTranslator.systemUiPinButtonFallbackLabels(
+                Q25KeyTranslator.Input.DELETE).isEmpty());
     }
 }
