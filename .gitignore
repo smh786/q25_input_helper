@@ -2,8 +2,10 @@
 build/
 app/build/
 local.properties
+.release/
 *.jks
 *.keystore
+*.p12
 *.apk
 *.aab
 *.idsig

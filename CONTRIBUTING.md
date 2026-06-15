@@ -51,3 +51,32 @@ PRs run:
 The manual `E2E` workflow runs an emulator smoke test. Run it for changes that affect installation, app startup, accessibility service registration, or Android framework integration.
 
 Release builds run after `main` passes tests.
+
+## Release Signing
+
+The release workflow requires these repository Actions secrets:
+
+- `KEYSTORE_BASE64`
+- `KEYSTORE_PASSWORD`
+- `KEY_ALIAS`
+- `KEY_PASSWORD`
+
+PRs run a `Release signing secrets configured` check so missing signing
+configuration is caught before merge.
+
+If this is the first release key for the project, create one with:
+
+```bash
+scripts/create_release_keystore.sh
+```
+
+That creates `.release/q25-input-helper-release.p12` and
+`.release/release-signing.env`. Keep both files backed up privately; Android
+updates require future releases to use the same signing key.
+
+Configure the GitHub secrets with:
+
+```bash
+set -a; . .release/release-signing.env; set +a
+scripts/configure_release_signing.sh "$KEYSTORE_PATH" "$KEY_ALIAS"
+```
