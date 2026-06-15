@@ -1,0 +1,39 @@
+{
+  "name": "Q25 Input Helper Android",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "remoteUser": "vscode",
+  "runArgs": [
+    "--privileged",
+    "--network=host"
+  ],
+  "containerEnv": {
+    "ANDROID_HOME": "/opt/android-sdk",
+    "ANDROID_SDK_ROOT": "/opt/android-sdk"
+  },
+  "mounts": [
+    "source=q25-input-helper-gradle,target=/home/vscode/.gradle,type=volume",
+    "source=q25-input-helper-android,target=/home/vscode/.android,type=volume"
+  ],
+  "postCreateCommand": "./gradlew --version",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "openai.chatgpt",
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-gradle"
+      ],
+      "settings": {
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-17",
+            "path": "/usr/local/sdkman/candidates/java/current",
+            "default": true
+          }
+        ]
+      }
+    }
+  }
+}
