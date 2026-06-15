@@ -10,6 +10,7 @@
     "--network=host"
   ],
   "containerEnv": {
+    "ADB_SERVER_SOCKET": "tcp:host.docker.internal:5037",
     "ANDROID_HOME": "/opt/android-sdk",
     "ANDROID_SDK_ROOT": "/opt/android-sdk"
   },
