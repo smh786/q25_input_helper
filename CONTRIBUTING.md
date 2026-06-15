@@ -62,10 +62,21 @@ The release workflow requires these repository Actions secrets:
 - `KEY_PASSWORD`
 
 PRs run a `Release signing secrets configured` check so missing signing
-configuration is caught before merge. Configure the secrets with:
+configuration is caught before merge.
+
+If this is the first release key for the project, create one with:
 
 ```bash
-export KEYSTORE_PASSWORD="..."
-export KEY_PASSWORD="..."
-scripts/configure_release_signing.sh ./release.jks q25-input-helper
+scripts/create_release_keystore.sh
+```
+
+That creates `.release/q25-input-helper-release.p12` and
+`.release/release-signing.env`. Keep both files backed up privately; Android
+updates require future releases to use the same signing key.
+
+Configure the GitHub secrets with:
+
+```bash
+set -a; . .release/release-signing.env; set +a
+scripts/configure_release_signing.sh "$KEYSTORE_PATH" "$KEY_ALIAS"
 ```
