@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
+import com.q25.inputhelper.fixes.CalculatorInputFix;
 import com.q25.inputhelper.fixes.SystemUiPinInputFix;
 import com.q25.inputhelper.input.InputFixRegistry;
 
@@ -18,6 +19,7 @@ public final class InputAccessibilityService extends AccessibilityService {
 
         registry = new InputFixRegistry();
         registry.add(new SystemUiPinInputFix());
+        registry.add(new CalculatorInputFix());
         Log.i(TAG, "service connected");
     }
 

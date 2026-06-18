@@ -29,6 +29,64 @@ Q25 Input Helper must not:
   - Requires the device keyguard to be locked.
   - Maps Q25 PIN keys to SystemUI PIN keypad buttons.
   - Requires the target button to belong under the PIN view before clicking.
+- Stock Calculator keypad.
+  - Requires the active root package to be a supported stock calculator package.
+  - Maps Q25 number, operator, parentheses, percent, factorial, decimal, delete, and Sym keys.
+  - Maps Sym to the stock calculator's scientific button toggle.
+  - Leaves return for the calculator app to handle and maps delete to backspace.
+  - Clicks only known stock calculator keypad buttons.
+
+## Key Mappings
+
+### SystemUI PIN
+
+These mappings only apply on the Android lockscreen PIN keypad.
+
+| Q25 key | PIN input |
+| --- | --- |
+| `w` or `1` | `1` |
+| `e` or `2` | `2` |
+| `r` or `3` | `3` |
+| `s` or `4` | `4` |
+| `d` or `5` | `5` |
+| `f` or `6` | `6` |
+| `z` or `7` | `7` |
+| `x` or `8` | `8` |
+| `c` or `9` | `9` |
+| `0` | `0` |
+| Enter or D-pad center | Submit |
+| Delete | Backspace |
+
+### Stock Calculator
+
+These mappings only apply in supported stock calculator packages:
+`com.google.android.calculator`, `com.android.calculator2`, and `com.android.calculator`.
+
+| Q25 key | Calculator input |
+| --- | --- |
+| `w` or `1` | `1` |
+| `e` or `2` | `2` |
+| `r` or `3` | `3` |
+| `s` or `4` | `4` |
+| `d` or `5` | `5` |
+| `f` or `6` | `6` |
+| `z` or `7` | `7` |
+| `x` or `8` | `8` |
+| `c` or `9` | `9` |
+| `0` | `0` |
+| `i` | Minus |
+| `o` | Plus |
+| `a` | Multiply |
+| `g` | Divide |
+| `m` | Decimal point |
+| `u` | Percent |
+| `b` | Factorial |
+| `t` | Left parenthesis |
+| `y` | Right parenthesis |
+| Sym | Show or hide scientific buttons |
+| Delete | Backspace |
+
+Return/enter is intentionally left for the calculator app to handle.
 
 This fix is inspired by and credits mionica's closed Q25 KeyMapper Boot Fix PR:
 https://github.com/smh786/q25-keymapper-boot-fix/pull/7
@@ -51,18 +109,24 @@ Planned fixes can include targeted adapters for broken system-app input surfaces
 
 ## E2E Smoke Test
 
+Calculator key mapping has local simulation coverage in the unit test suite. It does not require a phone or emulator:
+
+```bash
+./gradlew testStandardDebugUnitTest --tests com.q25.inputhelper.input.CalculatorInputSimulationTest
+```
+
 The `E2E` workflow can be run manually from GitHub Actions. It starts an emulator, installs the app, and verifies the target package. Device-specific Q25 behavior still needs manual testing on hardware.
 
 For hardware testing:
 
 ```bash
-./scripts/install-system-test.sh --apk ./q25-input-helper-system-0.1.1.apk
+./scripts/install-system-test.sh --apk ./q25-input-helper-system-0.2.0.apk
 ```
 
 or on Windows:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-system-test.ps1 -ApkPath .\q25-input-helper-system-0.1.1.apk
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-system-test.ps1 -ApkPath .\q25-input-helper-system-0.2.0.apk
 ```
 
 ## Contributing
