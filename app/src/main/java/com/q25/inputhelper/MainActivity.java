@@ -25,7 +25,7 @@ import com.q25.inputhelper.settings.HelperScreenSettings;
 
 public final class MainActivity extends Activity {
     private static final String REPOSITORY_URL = "https://github.com/smh786/q25_input_helper";
-    private static final String KOFI_URL = "https://ko-fi.com/sethschroeder";
+    private static final String KOFI_URL = "https://ko-fi.com/smh786";
 
     private TextView serviceStatus;
 
