@@ -23,6 +23,14 @@ Q25 Input Helper must not:
 - Log PINs, passwords, typed content, or user input.
 - Patch unrelated app behavior.
 
+## Helper Toggles
+
+The standard app includes a launcher screen where users can turn individual helper screens on or off.
+
+This toggle UI is only available in the `standard` app variant. The `system` variant has no launcher and is intended for ROM integration.
+
+Turning a helper off prevents Q25 Input Helper from handling keys for that specific screen while leaving the other enabled helpers available.
+
 ## Current Fixes
 
 - Sleeping screen wake.
@@ -110,7 +118,7 @@ Planned fixes can include targeted adapters for broken system-app input surfaces
 
 ## Variants
 
-- `standard`: sideload build with a launcher activity for testing.
+- `standard`: sideload build with a launcher activity for testing and helper toggles.
 - `system`: no-launcher build intended for ROM `/system/priv-app` inclusion.
 
 ## Build
