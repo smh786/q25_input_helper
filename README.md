@@ -21,6 +21,14 @@ Q25 Input Helper must not:
 - Log PINs, passwords, typed content, or user input.
 - Patch unrelated app behavior.
 
+## Helper Toggles
+
+The standard app includes a launcher screen where users can turn individual helper screens on or off.
+
+This toggle UI is only available in the `standard` app variant. The `system` variant has no launcher and is intended for ROM integration.
+
+Turning a helper off prevents Q25 Input Helper from handling keys for that specific screen while leaving the other enabled helpers available.
+
 ## Current Fixes
 
 - SystemUI PIN screen.
@@ -88,14 +96,11 @@ These mappings only apply in supported stock calculator packages:
 
 Return/enter is intentionally left for the calculator app to handle.
 
-This fix is inspired by and credits mionica's closed Q25 KeyMapper Boot Fix PR:
-https://github.com/smh786/q25-keymapper-boot-fix/pull/7
-
 Planned fixes can include targeted adapters for broken system-app input surfaces, such as dialer/phone screens where number entry does not work correctly from the Q25 keyboard.
 
 ## Variants
 
-- `standard`: sideload build with a launcher activity for testing.
+- `standard`: sideload build with a launcher activity for testing and helper toggles.
 - `system`: no-launcher build intended for ROM `/system/priv-app` inclusion.
 
 ## Build
@@ -120,13 +125,13 @@ The `E2E` workflow can be run manually from GitHub Actions. It starts an emulato
 For hardware testing:
 
 ```bash
-./scripts/install-system-test.sh --apk ./q25-input-helper-system-0.2.0.apk
+./scripts/install-system-test.sh --apk ./q25-input-helper-system-0.3.0.apk
 ```
 
 or on Windows:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-system-test.ps1 -ApkPath .\q25-input-helper-system-0.2.0.apk
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-system-test.ps1 -ApkPath .\q25-input-helper-system-0.3.0.apk
 ```
 
 ## Contributing
