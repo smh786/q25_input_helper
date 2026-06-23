@@ -10,12 +10,14 @@ Q25 Input Helper may:
 
 - Detect a known lockscreen or system-app input surface.
 - Translate Q25 physical key presses into the correct UI input for that surface.
+- Wake the sleeping screen from the Q25 space bar.
 - Click only positively identified accessibility nodes.
 - Do nothing when the target screen cannot be proven.
 
 Q25 Input Helper must not:
 
 - Globally remap keys.
+- Consume space bar input while the screen is already awake.
 - Act only because the device is locked.
 - Consume keys on unknown screens.
 - Log PINs, passwords, typed content, or user input.
@@ -23,6 +25,11 @@ Q25 Input Helper must not:
 
 ## Current Fixes
 
+- Sleeping screen wake.
+  - Handles only the Q25 space bar.
+  - Requires the display to be non-interactive before acting.
+  - Acquires a short wake lock to turn the screen on.
+  - Ignores all other keys and leaves space untouched while the screen is awake.
 - SystemUI PIN screen.
   - Detects `com.android.systemui:id/keyguard_pin_view`.
   - Requires the active root package to be `com.android.systemui`.
@@ -88,6 +95,14 @@ These mappings only apply in supported stock calculator packages:
 
 Return/enter is intentionally left for the calculator app to handle.
 
+### Sleeping Screen Wake
+
+These mappings only apply while the display is off or sleeping.
+
+| Q25 key | Action |
+| --- | --- |
+| Space | Wake screen |
+
 This fix is inspired by and credits mionica's closed Q25 KeyMapper Boot Fix PR:
 https://github.com/smh786/q25-keymapper-boot-fix/pull/7
 
@@ -120,13 +135,13 @@ The `E2E` workflow can be run manually from GitHub Actions. It starts an emulato
 For hardware testing:
 
 ```bash
-./scripts/install-system-test.sh --apk ./q25-input-helper-system-0.2.0.apk
+./scripts/install-system-test.sh --apk ./q25-input-helper-system-0.3.0.apk
 ```
 
 or on Windows:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-system-test.ps1 -ApkPath .\q25-input-helper-system-0.2.0.apk
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-system-test.ps1 -ApkPath .\q25-input-helper-system-0.3.0.apk
 ```
 
 ## Contributing

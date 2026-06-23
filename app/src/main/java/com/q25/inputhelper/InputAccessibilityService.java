@@ -8,6 +8,8 @@ import android.view.accessibility.AccessibilityEvent;
 import com.q25.inputhelper.fixes.CalculatorInputFix;
 import com.q25.inputhelper.fixes.SystemUiPinInputFix;
 import com.q25.inputhelper.input.InputFixRegistry;
+import com.q25.inputhelper.settings.HelperScreen;
+import com.q25.inputhelper.settings.HelperScreenSettings;
 
 public final class InputAccessibilityService extends AccessibilityService {
     private static final String TAG = "Q25InputService";
@@ -18,8 +20,8 @@ public final class InputAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
 
         registry = new InputFixRegistry();
-        registry.add(new SystemUiPinInputFix());
-        registry.add(new CalculatorInputFix());
+        registry.add(new SystemUiPinInputFix(), isHelperEnabled(HelperScreen.SYSTEM_UI_PIN));
+        registry.add(new CalculatorInputFix(), isHelperEnabled(HelperScreen.CALCULATOR));
         Log.i(TAG, "service connected");
     }
 
@@ -37,5 +39,14 @@ public final class InputAccessibilityService extends AccessibilityService {
     @Override
     public void onInterrupt() {
         // No persistent work to cancel.
+    }
+
+    private InputFixRegistry.EnabledState isHelperEnabled(final HelperScreen helperScreen) {
+        return new InputFixRegistry.EnabledState() {
+            @Override
+            public boolean isEnabled() {
+                return HelperScreenSettings.isEnabled(InputAccessibilityService.this, helperScreen);
+            }
+        };
     }
 }
