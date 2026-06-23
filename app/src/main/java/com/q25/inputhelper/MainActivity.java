@@ -1,15 +1,20 @@
 package com.q25.inputhelper;
 
-import android.app.Activity;
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.URLSpan;
 import android.view.Gravity;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Switch;
@@ -19,6 +24,9 @@ import com.q25.inputhelper.settings.HelperScreen;
 import com.q25.inputhelper.settings.HelperScreenSettings;
 
 public final class MainActivity extends Activity {
+    private static final String REPOSITORY_URL = "https://github.com/smh786/q25_input_helper";
+    private static final String KOFI_URL = "https://ko-fi.com/sethschroeder";
+
     private TextView serviceStatus;
 
     @Override
@@ -26,11 +34,17 @@ public final class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         int padding = dp(20);
+        FrameLayout root = new FrameLayout(this);
+
         ScrollView scrollView = new ScrollView(this);
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(padding, padding, padding, padding);
+        layout.setPadding(padding, padding, padding, padding + dp(72));
         scrollView.addView(layout);
+        root.addView(scrollView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        ));
 
         TextView title = new TextView(this);
         title.setText("Q25 Input Helper");
@@ -65,7 +79,21 @@ public final class MainActivity extends Activity {
             layout.addView(createHelperRow(helperScreen));
         }
 
-        setContentView(scrollView);
+        TextView footer = new TextView(this);
+        footer.setText(buildFooterText());
+        footer.setTextSize(12);
+        footer.setGravity(Gravity.END);
+        footer.setMovementMethod(LinkMovementMethod.getInstance());
+        footer.setPadding(padding, dp(8), padding, padding);
+
+        FrameLayout.LayoutParams footerParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.END
+        );
+        root.addView(footer, footerParams);
+
+        setContentView(root);
     }
 
     @Override
@@ -80,6 +108,28 @@ public final class MainActivity extends Activity {
         if (hasFocus) {
             updateServiceStatus();
         }
+    }
+
+    private SpannableStringBuilder buildFooterText() {
+        SpannableStringBuilder text = new SpannableStringBuilder()
+                .append("v")
+                .append(BuildConfig.VERSION_NAME)
+                .append("\n")
+                .append("GitHub")
+                .append(" | ")
+                .append("Ko-fi");
+
+        setLink(text, "GitHub", REPOSITORY_URL);
+        setLink(text, "Ko-fi", KOFI_URL);
+        return text;
+    }
+
+    private void setLink(SpannableStringBuilder text, String label, String url) {
+        int start = text.toString().indexOf(label);
+        if (start == -1) {
+            return;
+        }
+        text.setSpan(new URLSpan(url), start, start + label.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     private int dp(int value) {
