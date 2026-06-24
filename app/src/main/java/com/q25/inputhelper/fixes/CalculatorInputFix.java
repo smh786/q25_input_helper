@@ -2,7 +2,6 @@ package com.q25.inputhelper.fixes;
 
 import android.accessibilityservice.AccessibilityService;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
@@ -14,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class CalculatorInputFix implements InputFix {
-    private static final String TAG = "Q25CalculatorInputFix";
     static final String AOSP_CALCULATOR_PACKAGE = "com.android.calculator2";
     static final String LEGACY_CALCULATOR_PACKAGE = "com.android.calculator";
     static final String GOOGLE_CALCULATOR_PACKAGE = "com.google.android.calculator";
@@ -31,8 +29,6 @@ public final class CalculatorInputFix implements InputFix {
         if (input == null) {
             return false;
         }
-        Log.d(TAG, "Saw calculator key event: keyCode=" + event.getKeyCode()
-                + " action=" + event.getAction() + " input=" + input);
 
         AccessibilityNodeInfo root = service.getRootInActiveWindow();
         if (root == null) {
@@ -42,7 +38,6 @@ public final class CalculatorInputFix implements InputFix {
         try {
             String packageName = activeCalculatorPackage(root);
             if (packageName == null) {
-                Log.d(TAG, "Ignoring non-calculator package: " + root.getPackageName());
                 return false;
             }
             if (event.getAction() == KeyEvent.ACTION_UP) {
@@ -55,7 +50,6 @@ public final class CalculatorInputFix implements InputFix {
             String directText = Q25KeyTranslator.calculatorDirectText(input);
             if (directText != null) {
                 boolean inserted = appendFormulaText(root, packageName, directText);
-                Log.d(TAG, "Appending formula text '" + directText + "' result=" + inserted);
                 if (inserted) {
                     return true;
                 }
@@ -63,7 +57,6 @@ public final class CalculatorInputFix implements InputFix {
 
             AccessibilityNodeInfo button = findCalculatorButton(root, packageName, input);
             if (button == null) {
-                Log.d(TAG, "No calculator button found for input: " + input + " in " + packageName);
                 return false;
             }
 
@@ -74,8 +67,6 @@ public final class CalculatorInputFix implements InputFix {
                 if (event.getRepeatCount() > 0) {
                     return true;
                 }
-                Log.d(TAG, "Clicking calculator button: "
-                        + Q25KeyTranslator.calculatorButtonId(packageName, input));
                 button.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 return true;
             } finally {

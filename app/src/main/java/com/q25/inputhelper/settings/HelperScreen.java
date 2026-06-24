@@ -10,6 +10,11 @@ public enum HelperScreen {
             "helper_calculator_enabled",
             "Calculator",
             "Route Q25 number and operator keys to supported calculator apps."
+    ),
+    MESSAGES_COMPOSER(
+            "helper_messages_composer_enabled",
+            "Messages composer",
+            "Send Google Messages drafts with Enter and suppress Alt+Enter in the composer."
     );
 
     private final String preferenceKey;
