@@ -1,18 +1,17 @@
 package com.q25.inputhelper;
 
 import android.accessibilityservice.AccessibilityService;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.q25.inputhelper.fixes.CalculatorInputFix;
+import com.q25.inputhelper.fixes.MessagesComposerInputFix;
 import com.q25.inputhelper.fixes.SystemUiPinInputFix;
 import com.q25.inputhelper.input.InputFixRegistry;
 import com.q25.inputhelper.settings.HelperScreen;
 import com.q25.inputhelper.settings.HelperScreenSettings;
 
 public final class InputAccessibilityService extends AccessibilityService {
-    private static final String TAG = "Q25InputService";
     private InputFixRegistry registry;
 
     @Override
@@ -22,7 +21,7 @@ public final class InputAccessibilityService extends AccessibilityService {
         registry = new InputFixRegistry();
         registry.add(new SystemUiPinInputFix(), isHelperEnabled(HelperScreen.SYSTEM_UI_PIN));
         registry.add(new CalculatorInputFix(), isHelperEnabled(HelperScreen.CALCULATOR));
-        Log.i(TAG, "service connected");
+        registry.add(new MessagesComposerInputFix(), isHelperEnabled(HelperScreen.MESSAGES_COMPOSER));
     }
 
     @Override
