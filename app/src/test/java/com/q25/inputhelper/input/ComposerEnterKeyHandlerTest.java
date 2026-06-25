@@ -54,6 +54,15 @@ public final class ComposerEnterKeyHandlerTest {
     }
 
     @Test
+    public void isShiftMetaStateHandlesLeftAndRightShift() {
+        assertTrue(ComposerEnterKeyHandler.isShiftMetaState(KeyEvent.META_SHIFT_ON));
+        assertTrue(ComposerEnterKeyHandler.isShiftMetaState(KeyEvent.META_SHIFT_LEFT_ON));
+        assertTrue(ComposerEnterKeyHandler.isShiftMetaState(KeyEvent.META_SHIFT_RIGHT_ON));
+
+        assertFalse(ComposerEnterKeyHandler.isShiftMetaState(0));
+    }
+
+    @Test
     public void hasDraftTextRequiresNonBlankText() {
         assertTrue(ComposerEnterKeyHandler.hasDraftText("hello"));
 

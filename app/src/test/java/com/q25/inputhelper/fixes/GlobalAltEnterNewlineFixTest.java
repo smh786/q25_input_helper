@@ -11,22 +11,58 @@ public final class GlobalAltEnterNewlineFixTest {
     @Test
     public void isHandledAltEnterKeyHandlesAltEnterDownAndUp() {
         assertTrue(GlobalAltEnterNewlineFix.isHandledAltEnterKey(
-                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, KeyEvent.META_ALT_ON, false));
+                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, KeyEvent.META_ALT_LEFT_ON));
         assertTrue(GlobalAltEnterNewlineFix.isHandledAltEnterKey(
-                KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER, KeyEvent.META_ALT_LEFT_ON, false));
-        assertTrue(GlobalAltEnterNewlineFix.isHandledAltEnterKey(
-                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, 0, true));
+                KeyEvent.ACTION_UP,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.META_ALT_ON | KeyEvent.META_ALT_LEFT_ON));
     }
 
     @Test
     public void isHandledAltEnterKeyIgnoresPlainEnterAndOtherKeys() {
         assertFalse(GlobalAltEnterNewlineFix.isHandledAltEnterKey(
-                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, 0, false));
+                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, 0));
         assertFalse(GlobalAltEnterNewlineFix.isHandledAltEnterKey(
-                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE, KeyEvent.META_ALT_ON, false));
+                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, KeyEvent.META_ALT_ON));
         assertFalse(GlobalAltEnterNewlineFix.isHandledAltEnterKey(
-                KeyEvent.ACTION_MULTIPLE, KeyEvent.KEYCODE_ENTER, KeyEvent.META_ALT_ON, false));
+                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, KeyEvent.META_ALT_RIGHT_ON));
+        assertFalse(GlobalAltEnterNewlineFix.isHandledAltEnterKey(
+                KeyEvent.ACTION_DOWN,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.META_ALT_ON | KeyEvent.META_ALT_RIGHT_ON));
+        assertFalse(GlobalAltEnterNewlineFix.isHandledAltEnterKey(
+                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER, KeyEvent.META_SHIFT_ON));
+        assertFalse(GlobalAltEnterNewlineFix.isHandledAltEnterKey(
+                KeyEvent.ACTION_DOWN,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.META_ALT_LEFT_ON | KeyEvent.META_SHIFT_ON));
+        assertFalse(GlobalAltEnterNewlineFix.isHandledAltEnterKey(
+                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE, KeyEvent.META_ALT_ON));
+        assertFalse(GlobalAltEnterNewlineFix.isHandledAltEnterKey(
+                KeyEvent.ACTION_MULTIPLE, KeyEvent.KEYCODE_ENTER, KeyEvent.META_ALT_LEFT_ON));
         assertFalse(GlobalAltEnterNewlineFix.isHandledAltEnterEvent(null));
+    }
+
+    @Test
+    public void isLeftAltPressedOnlyHandlesLeftAlt() {
+        assertTrue(GlobalAltEnterNewlineFix.isLeftAltPressed(KeyEvent.META_ALT_LEFT_ON));
+        assertTrue(GlobalAltEnterNewlineFix.isLeftAltPressed(
+                KeyEvent.META_ALT_ON | KeyEvent.META_ALT_LEFT_ON));
+
+        assertFalse(GlobalAltEnterNewlineFix.isLeftAltPressed(0));
+        assertFalse(GlobalAltEnterNewlineFix.isLeftAltPressed(KeyEvent.META_ALT_ON));
+        assertFalse(GlobalAltEnterNewlineFix.isLeftAltPressed(KeyEvent.META_ALT_RIGHT_ON));
+        assertFalse(GlobalAltEnterNewlineFix.isLeftAltPressed(
+                KeyEvent.META_ALT_ON | KeyEvent.META_ALT_RIGHT_ON));
+    }
+
+    @Test
+    public void isShiftPressedHandlesLeftAndRightShift() {
+        assertTrue(GlobalAltEnterNewlineFix.isShiftPressed(KeyEvent.META_SHIFT_ON));
+        assertTrue(GlobalAltEnterNewlineFix.isShiftPressed(KeyEvent.META_SHIFT_LEFT_ON));
+        assertTrue(GlobalAltEnterNewlineFix.isShiftPressed(KeyEvent.META_SHIFT_RIGHT_ON));
+
+        assertFalse(GlobalAltEnterNewlineFix.isShiftPressed(0));
     }
 
     @Test
