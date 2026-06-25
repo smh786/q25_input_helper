@@ -93,8 +93,7 @@ public final class ComposerEnterKeyHandler {
             }
 
             try {
-                boolean altPressed = isAltPressed(event);
-                if (altPressed) {
+                if (hasNonPlainEnterModifier(event)) {
                     pendingPlainEnterSend = false;
                     return false;
                 }
@@ -162,8 +161,22 @@ public final class ComposerEnterKeyHandler {
                 | KeyEvent.META_ALT_RIGHT_ON)) != 0;
     }
 
+    static boolean isShiftMetaState(int metaState) {
+        return (metaState & (KeyEvent.META_SHIFT_ON
+                | KeyEvent.META_SHIFT_LEFT_ON
+                | KeyEvent.META_SHIFT_RIGHT_ON)) != 0;
+    }
+
     private static boolean isAltPressed(KeyEvent event) {
         return event.isAltPressed() || isAltMetaState(event.getMetaState());
+    }
+
+    private static boolean isShiftPressed(KeyEvent event) {
+        return event.isShiftPressed() || isShiftMetaState(event.getMetaState());
+    }
+
+    private static boolean hasNonPlainEnterModifier(KeyEvent event) {
+        return isAltPressed(event) || isShiftPressed(event);
     }
 
     static boolean hasDraftText(CharSequence text) {

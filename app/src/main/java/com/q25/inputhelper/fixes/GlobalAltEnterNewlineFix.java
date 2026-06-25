@@ -76,26 +76,29 @@ public final class GlobalAltEnterNewlineFix implements InputFix {
         return isHandledAltEnterKey(
                 event.getAction(),
                 event.getKeyCode(),
-                event.getMetaState(),
-                event.isAltPressed()
+                event.getMetaState()
         );
     }
 
     static boolean isHandledAltEnterKey(
             int action,
             int keyCode,
-            int metaState,
-            boolean altPressed
+            int metaState
     ) {
         return (action == KeyEvent.ACTION_DOWN || action == KeyEvent.ACTION_UP)
                 && keyCode == KeyEvent.KEYCODE_ENTER
-                && isAltPressed(metaState, altPressed);
+                && isLeftAltPressed(metaState)
+                && !isShiftPressed(metaState);
     }
 
-    static boolean isAltPressed(int metaState, boolean altPressed) {
-        return altPressed || (metaState & (KeyEvent.META_ALT_ON
-                | KeyEvent.META_ALT_LEFT_ON
-                | KeyEvent.META_ALT_RIGHT_ON)) != 0;
+    static boolean isLeftAltPressed(int metaState) {
+        return (metaState & KeyEvent.META_ALT_LEFT_ON) != 0;
+    }
+
+    static boolean isShiftPressed(int metaState) {
+        return (metaState & (KeyEvent.META_SHIFT_ON
+                | KeyEvent.META_SHIFT_LEFT_ON
+                | KeyEvent.META_SHIFT_RIGHT_ON)) != 0;
     }
 
     static boolean supportsMultiline(AccessibilityNodeInfo node) {
