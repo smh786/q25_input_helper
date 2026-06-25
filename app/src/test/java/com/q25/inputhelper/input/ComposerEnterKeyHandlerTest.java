@@ -7,6 +7,8 @@ import android.view.KeyEvent;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+
 public final class ComposerEnterKeyHandlerTest {
     @Test
     public void isHandledEnterKeyHandlesEnterDownAndUp() {
@@ -26,21 +28,20 @@ public final class ComposerEnterKeyHandlerTest {
     }
 
     @Test
-    public void shouldArmSendOnKeyDownOnlyForInitialPlainEnterWithDraft() {
-        assertTrue(ComposerEnterKeyHandler.shouldArmSendOnKeyDown(false, 0, true));
+    public void shouldArmSendOnKeyDownOnlyForInitialEnterWithDraftAndSendButton() {
+        assertTrue(ComposerEnterKeyHandler.shouldArmSendOnKeyDown(0, true, true));
 
-        assertFalse(ComposerEnterKeyHandler.shouldArmSendOnKeyDown(true, 0, true));
-        assertFalse(ComposerEnterKeyHandler.shouldArmSendOnKeyDown(false, 1, true));
-        assertFalse(ComposerEnterKeyHandler.shouldArmSendOnKeyDown(false, 0, false));
+        assertFalse(ComposerEnterKeyHandler.shouldArmSendOnKeyDown(1, true, true));
+        assertFalse(ComposerEnterKeyHandler.shouldArmSendOnKeyDown(0, false, true));
+        assertFalse(ComposerEnterKeyHandler.shouldArmSendOnKeyDown(0, true, false));
     }
 
     @Test
     public void shouldClickSendButtonOnKeyUpOnlyForPendingPlainEnterWithDraft() {
-        assertTrue(ComposerEnterKeyHandler.shouldClickSendButtonOnKeyUp(false, true, true));
+        assertTrue(ComposerEnterKeyHandler.shouldClickSendButtonOnKeyUp(true, true));
 
-        assertFalse(ComposerEnterKeyHandler.shouldClickSendButtonOnKeyUp(true, true, true));
-        assertFalse(ComposerEnterKeyHandler.shouldClickSendButtonOnKeyUp(false, false, true));
-        assertFalse(ComposerEnterKeyHandler.shouldClickSendButtonOnKeyUp(false, true, false));
+        assertFalse(ComposerEnterKeyHandler.shouldClickSendButtonOnKeyUp(false, true));
+        assertFalse(ComposerEnterKeyHandler.shouldClickSendButtonOnKeyUp(true, false));
     }
 
     @Test
@@ -62,25 +63,50 @@ public final class ComposerEnterKeyHandlerTest {
     }
 
     @Test
-    public void isSendButtonViewIdHandlesNullViewIds() {
-        assertTrue(ComposerEnterKeyHandler.isSendButtonViewId(
-                "Compose:Draft:Send",
-                "Compose:Draft:Send"));
+    public void isSupportedPackageMatchesExactAndSubpackages() {
+        assertTrue(ComposerEnterKeyHandler.isSupportedPackage(
+                Arrays.asList("com.whatsapp"),
+                "com.whatsapp"));
+        assertTrue(ComposerEnterKeyHandler.isSupportedPackage(
+                Arrays.asList("org.telegram.messenger"),
+                "org.telegram.messenger.web"));
 
-        assertFalse(ComposerEnterKeyHandler.isSendButtonViewId("Compose:Draft:Send", null));
-        assertFalse(ComposerEnterKeyHandler.isSendButtonViewId(
-                "Compose:Draft:Send",
-                "ComposeRowIcon:Gallery"));
+        assertFalse(ComposerEnterKeyHandler.isSupportedPackage(
+                Arrays.asList("com.whatsapp"),
+                "com.example"));
+        assertFalse(ComposerEnterKeyHandler.isSupportedPackage(
+                Arrays.asList("com.whatsapp"),
+                null));
     }
 
     @Test
-    public void insertNewlineTextUsesSelectionOrAppendsWhenMissing() {
-        assertTrue(ComposerEnterKeyHandler.insertNewlineText("hello", 2, 2).toString()
-                .equals("he\nllo"));
-        assertTrue(ComposerEnterKeyHandler.insertNewlineText("hello", 1, 4).toString()
-                .equals("h\no"));
-        assertTrue(ComposerEnterKeyHandler.insertNewlineText("hello", -1, -1).toString()
-                .equals("hello\n"));
+    public void isLikelySendButtonMatchesKnownViewIdAndSendLabels() {
+        assertTrue(ComposerEnterKeyHandler.isLikelySendButton(
+                ComposerEnterKeyHandler.defaultSendButtonMatchers(),
+                "Compose:Draft:Send",
+                null,
+                null));
+        assertTrue(ComposerEnterKeyHandler.isLikelySendButton(
+                ComposerEnterKeyHandler.defaultSendButtonMatchers(),
+                "com.example:id/send_button",
+                null,
+                null));
+        assertTrue(ComposerEnterKeyHandler.isLikelySendButton(
+                ComposerEnterKeyHandler.defaultSendButtonMatchers(),
+                null,
+                "Send message",
+                null));
+        assertTrue(ComposerEnterKeyHandler.isLikelySendButton(
+                ComposerEnterKeyHandler.defaultSendButtonMatchers(),
+                null,
+                null,
+                "Submit"));
+
+        assertFalse(ComposerEnterKeyHandler.isLikelySendButton(
+                ComposerEnterKeyHandler.defaultSendButtonMatchers(),
+                "com.example:id/gallery",
+                "Attach image",
+                null));
     }
 
     @Test

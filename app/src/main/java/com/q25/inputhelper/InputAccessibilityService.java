@@ -5,7 +5,8 @@ import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.q25.inputhelper.fixes.CalculatorInputFix;
-import com.q25.inputhelper.fixes.MessagesComposerInputFix;
+import com.q25.inputhelper.fixes.GlobalAltEnterNewlineFix;
+import com.q25.inputhelper.fixes.ChatComposerSendInputFix;
 import com.q25.inputhelper.fixes.SystemUiPinInputFix;
 import com.q25.inputhelper.input.InputFixRegistry;
 import com.q25.inputhelper.settings.HelperScreen;
@@ -19,9 +20,10 @@ public final class InputAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
 
         registry = new InputFixRegistry();
+        registry.add(new GlobalAltEnterNewlineFix(), isHelperEnabled(HelperScreen.CHAT_COMPOSER_SHORTCUTS));
         registry.add(new SystemUiPinInputFix(), isHelperEnabled(HelperScreen.SYSTEM_UI_PIN));
         registry.add(new CalculatorInputFix(), isHelperEnabled(HelperScreen.CALCULATOR));
-        registry.add(new MessagesComposerInputFix(), isHelperEnabled(HelperScreen.MESSAGES_COMPOSER));
+        registry.add(new ChatComposerSendInputFix(), isHelperEnabled(HelperScreen.CHAT_COMPOSER_SHORTCUTS));
     }
 
     @Override

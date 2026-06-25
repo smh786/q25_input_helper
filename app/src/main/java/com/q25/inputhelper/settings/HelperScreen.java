@@ -1,6 +1,11 @@
 package com.q25.inputhelper.settings;
 
 public enum HelperScreen {
+    CHAT_COMPOSER_SHORTCUTS(
+            "helper_chat_composer_shortcuts_enabled",
+            "Chat composer shortcuts",
+            "Use Alt+Enter for new lines and Enter to send on supported message screens."
+    ),
     SYSTEM_UI_PIN(
             "helper_system_ui_pin_enabled",
             "Lockscreen PIN",
@@ -10,11 +15,6 @@ public enum HelperScreen {
             "helper_calculator_enabled",
             "Calculator",
             "Route Q25 number and operator keys to supported calculator apps."
-    ),
-    MESSAGES_COMPOSER(
-            "helper_messages_composer_enabled",
-            "Messages composer",
-            "Send Google Messages drafts with Enter and suppress Alt+Enter in the composer."
     );
 
     private final String preferenceKey;

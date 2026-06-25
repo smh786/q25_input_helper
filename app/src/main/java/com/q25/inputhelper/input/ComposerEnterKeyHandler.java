@@ -2,20 +2,77 @@ package com.q25.inputhelper.input;
 
 import android.accessibilityservice.AccessibilityService;
 import android.os.Build;
-import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
-import com.q25.inputhelper.util.AccessibilityNodes;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
 public final class ComposerEnterKeyHandler {
-    private final String packageName;
-    private final String sendButtonViewId;
+    private static final String GOOGLE_MESSAGES_SEND_BUTTON_VIEW_ID = "Compose:Draft:Send";
+    private static final List<String> DEFAULT_SUPPORTED_PACKAGES = Arrays.asList(
+            "com.google.android.apps.messaging",
+            "com.whatsapp",
+            "org.telegram",
+            "org.telegram.messenger",
+            "org.thoughtcrime.securesms",
+            "ai.openai.chatgpt",
+            "com.openai.chatgpt",
+            "im.vector.app",
+            "com.mattermost.rn",
+            "chat.mattermost",
+            "com.matter",
+            "ai.perplexity",
+            "chat.perplexity.android",
+            "com.perplexity",
+            "ai.perplexity.app"
+    );
+    private static final List<String> DEFAULT_SEND_BUTTON_MATCHERS = Arrays.asList(
+            "send",
+            "send message",
+            "send button",
+            "submit",
+            "submit message",
+            "voice send",
+            "message send",
+            "composer send",
+            "send_message",
+            "button_send",
+            "message_send",
+            "send_button",
+            "compose_send",
+            "chat_send",
+            "ic_send",
+            "send_icon",
+            "arrow_upward",
+            "arrow_up",
+            "paper_plane",
+            "paperplane"
+    );
+
+    private final List<String> supportedPackages;
+    private final List<String> sendButtonMatchers;
     private boolean pendingPlainEnterSend;
 
     public ComposerEnterKeyHandler(String packageName, String sendButtonViewId) {
-        this.packageName = packageName;
-        this.sendButtonViewId = sendButtonViewId;
+        this(
+                packageName == null ? null : Arrays.asList(packageName),
+                sendButtonViewId == null ? null : Arrays.asList(sendButtonViewId)
+        );
+    }
+
+    public ComposerEnterKeyHandler(List<String> supportedPackages, List<String> sendButtonMatchers) {
+        this.supportedPackages = supportedPackages;
+        this.sendButtonMatchers = sendButtonMatchers;
+    }
+
+    public static List<String> defaultSupportedPackages() {
+        return DEFAULT_SUPPORTED_PACKAGES;
+    }
+
+    public static List<String> defaultSendButtonMatchers() {
+        return DEFAULT_SEND_BUTTON_MATCHERS;
     }
 
     public boolean onKeyEvent(AccessibilityService service, KeyEvent event) {
@@ -37,23 +94,24 @@ public final class ComposerEnterKeyHandler {
 
             try {
                 boolean altPressed = isAltPressed(event);
-                boolean hasDraft = hasDraftText(composer);
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    if (altPressed) {
-                        if (event.getRepeatCount() == 0) {
-                            insertNewline(composer);
-                        }
-                        pendingPlainEnterSend = false;
-                        return true;
-                    }
-
-                    pendingPlainEnterSend = shouldArmSendOnKeyDown(altPressed, event.getRepeatCount(), hasDraft);
-                    return true;
+                if (altPressed) {
+                    pendingPlainEnterSend = false;
+                    return false;
                 }
 
-                if (!shouldClickSendButtonOnKeyUp(altPressed, pendingPlainEnterSend, hasDraft)) {
+                boolean hasDraft = hasDraftText(composer);
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    pendingPlainEnterSend = shouldArmSendOnKeyDown(
+                            event.getRepeatCount(),
+                            hasDraft,
+                            hasClickableSendButton(root)
+                    );
+                    return pendingPlainEnterSend;
+                }
+
+                if (!shouldClickSendButtonOnKeyUp(pendingPlainEnterSend, hasDraft)) {
                     pendingPlainEnterSend = false;
-                    return true;
+                    return false;
                 }
 
                 pendingPlainEnterSend = false;
@@ -90,12 +148,12 @@ public final class ComposerEnterKeyHandler {
                 && (action == KeyEvent.ACTION_DOWN || action == KeyEvent.ACTION_UP);
     }
 
-    static boolean shouldArmSendOnKeyDown(boolean altPressed, int repeatCount, boolean hasDraft) {
-        return !altPressed && repeatCount == 0 && hasDraft;
+    static boolean shouldArmSendOnKeyDown(int repeatCount, boolean hasDraft, boolean hasSendButton) {
+        return repeatCount == 0 && hasDraft && hasSendButton;
     }
 
-    static boolean shouldClickSendButtonOnKeyUp(boolean altPressed, boolean pendingPlainEnterSend, boolean hasDraft) {
-        return !altPressed && pendingPlainEnterSend && hasDraft;
+    static boolean shouldClickSendButtonOnKeyUp(boolean pendingPlainEnterSend, boolean hasDraft) {
+        return pendingPlainEnterSend && hasDraft;
     }
 
     static boolean isAltMetaState(int metaState) {
@@ -112,41 +170,43 @@ public final class ComposerEnterKeyHandler {
         return text != null && text.toString().trim().length() > 0;
     }
 
-    static CharSequence insertNewlineText(CharSequence text, int selectionStart, int selectionEnd) {
-        String current = text == null ? "" : text.toString();
-        int start = clampSelection(selectionStart, current.length());
-        int end = clampSelection(selectionEnd, current.length());
-        int min = Math.min(start, end);
-        int max = Math.max(start, end);
-        return current.substring(0, min) + "\n" + current.substring(max);
-    }
-
     static CharSequence composerDraftText(CharSequence text, boolean showingHintText) {
         return showingHintText ? "" : text;
     }
 
-    static boolean isSendButtonViewId(String expectedViewId, CharSequence viewId) {
-        return viewId != null && expectedViewId.contentEquals(viewId);
-    }
-
-    private static int clampSelection(int selection, int length) {
-        if (selection < 0) {
-            return length;
+    static boolean isSupportedPackage(List<String> supportedPackages, CharSequence packageName) {
+        if (supportedPackages == null || packageName == null) {
+            return false;
         }
-        return Math.min(selection, length);
+
+        String actualPackage = packageName.toString();
+        for (String supportedPackage : supportedPackages) {
+            if (supportedPackage == null) {
+                continue;
+            }
+            if (actualPackage.equals(supportedPackage) || actualPackage.startsWith(supportedPackage + ".")) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    private static void insertNewline(AccessibilityNodeInfo composer) {
-        Bundle arguments = new Bundle();
-        arguments.putCharSequence(
-                AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
-                insertNewlineText(
-                        composerDraftText(composer.getText(), isShowingHintText(composer)),
-                        composer.getTextSelectionStart(),
-                        composer.getTextSelectionEnd()
-                )
-        );
-        composer.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments);
+    static boolean isLikelySendButton(
+            List<String> sendButtonMatchers,
+            CharSequence viewId,
+            CharSequence contentDescription,
+            CharSequence text
+    ) {
+        if (GOOGLE_MESSAGES_SEND_BUTTON_VIEW_ID.contentEquals(emptyIfNull(viewId))) {
+            return true;
+        }
+        if (sendButtonMatchers == null) {
+            return false;
+        }
+
+        return matchesAny(sendButtonMatchers, viewId, true)
+                || matchesAny(sendButtonMatchers, contentDescription, false)
+                || matchesAny(sendButtonMatchers, text, false);
     }
 
     private static boolean hasDraftText(AccessibilityNodeInfo composer) {
@@ -158,7 +218,7 @@ public final class ComposerEnterKeyHandler {
     }
 
     private AccessibilityNodeInfo findFocusedComposer(AccessibilityNodeInfo root) {
-        if (!AccessibilityNodes.hasPackage(root, packageName)) {
+        if (!isSupportedPackage(supportedPackages, root.getPackageName())) {
             return null;
         }
 
@@ -167,7 +227,7 @@ public final class ComposerEnterKeyHandler {
             return null;
         }
 
-        if (focused.isEditable() && AccessibilityNodes.hasPackage(focused, packageName)) {
+        if (focused.isEditable() && isSupportedPackage(supportedPackages, focused.getPackageName())) {
             return focused;
         } else {
             focused.recycle();
@@ -180,7 +240,12 @@ public final class ComposerEnterKeyHandler {
             return null;
         }
 
-        if (isSendButtonViewId(sendButtonViewId, root.getViewIdResourceName()) && root.isClickable()) {
+        if (isLikelySendButton(
+                sendButtonMatchers,
+                root.getViewIdResourceName(),
+                root.getContentDescription(),
+                root.getText()
+        ) && root.isClickable()) {
             return AccessibilityNodeInfo.obtain(root);
         }
 
@@ -201,6 +266,87 @@ public final class ComposerEnterKeyHandler {
             }
         }
 
+        if (root.isClickable() && hasSendButtonLabelInChildren(root)) {
+            return AccessibilityNodeInfo.obtain(root);
+        }
+
         return null;
+    }
+
+    private boolean hasSendButtonLabelInChildren(AccessibilityNodeInfo root) {
+        int childCount = root.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            AccessibilityNodeInfo child = root.getChild(i);
+            if (child == null) {
+                continue;
+            }
+
+            try {
+                if (isLikelySendButton(
+                        sendButtonMatchers,
+                        child.getViewIdResourceName(),
+                        child.getContentDescription(),
+                        child.getText()
+                ) || hasSendButtonLabelInChildren(child)) {
+                    return true;
+                }
+            } finally {
+                child.recycle();
+            }
+        }
+        return false;
+    }
+
+    private boolean hasClickableSendButton(AccessibilityNodeInfo root) {
+        AccessibilityNodeInfo sendButton = findSendButton(root);
+        if (sendButton == null) {
+            return false;
+        }
+
+        try {
+            return sendButton.isClickable();
+        } finally {
+            sendButton.recycle();
+        }
+    }
+
+    private static boolean matchesAny(
+            List<String> matchers,
+            CharSequence value,
+            boolean allowContains
+    ) {
+        if (value == null) {
+            return false;
+        }
+
+        String normalizedValue = normalize(value);
+        if (normalizedValue.length() == 0) {
+            return false;
+        }
+
+        for (String matcher : matchers) {
+            if (matcher == null) {
+                continue;
+            }
+            String normalizedMatcher = normalize(matcher);
+            if (normalizedValue.equals(normalizedMatcher)) {
+                return true;
+            }
+            if (allowContains && normalizedValue.contains(normalizedMatcher)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String normalize(CharSequence value) {
+        return value.toString()
+                .toLowerCase(Locale.US)
+                .replaceAll("[^a-z0-9]+", "_")
+                .replaceAll("^_+|_+$", "");
+    }
+
+    private static CharSequence emptyIfNull(CharSequence value) {
+        return value == null ? "" : value;
     }
 }
